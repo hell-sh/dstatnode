@@ -106,7 +106,7 @@ public class Main
 			new NetworkMonitor();
 			synchronized(sigar)
 			{
-				System.out.println("Thank you for setting up a dstat.live node! It's live at https://dstat.live/" + request(Main.endpoint + "init", "ipv4=" + URLEncoder.encode(ipv4, "UTF-8") + "&ipv6=" + URLEncoder.encode(ipv6, "UTF-8") + "&info=" + URLEncoder.encode(info, "UTF-8")));
+				System.out.println("Thank you. Your node is live at https://dstat.live/" + request(Main.endpoint + "init", "ipv4=" + URLEncoder.encode(ipv4, "UTF-8") + "&ipv6=" + URLEncoder.encode(ipv6, "UTF-8") + "&info=" + URLEncoder.encode(info, "UTF-8")));
 			}
 			new Reporter();
 			ch.closeFuture().sync();

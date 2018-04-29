@@ -1,9 +1,5 @@
 .idea/
+libs/
 out/
 *.iml
 info.txt
-*.so
-*.sl
-*.dylib
-*.dll
-*.lib
