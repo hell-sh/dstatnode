@@ -1,5 +1,7 @@
 # dstatnode
 
+- [Download the Latest Version](http://dstat.live/dstatnode.zip)
+
 ## Dependencies
 
 The following open-source dependencies are bundled with the download:
