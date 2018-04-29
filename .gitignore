@@ -1,5 +1,6 @@
 .idea/
 libs/
+dstatnode/dstatnode.jar
 out/
 *.iml
 info.txt

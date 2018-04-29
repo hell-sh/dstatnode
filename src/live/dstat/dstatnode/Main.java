@@ -17,6 +17,7 @@ public class Main
 {
 	public static final Sigar sigar = new Sigar();
 	public static final String endpoint = "http://dstat.live/node/";
+	public static String version = "1.0.1";
 	public static String ipv4 = "";
 	public static String ipv6 = "";
 	public static long down = 0;
@@ -118,7 +119,16 @@ public class Main
 			new NetworkMonitor();
 			synchronized(sigar)
 			{
-				System.out.println("Thank you. Your node is live at https://dstat.live/" + request(Main.endpoint + "init", "ipv4=" + URLEncoder.encode(ipv4, "UTF-8") + "&ipv6=" + URLEncoder.encode(ipv6, "UTF-8") + "&info=" + URLEncoder.encode(info, "UTF-8")));
+				String response = request(Main.endpoint + "init", "version=" + URLEncoder.encode(version, "UTF-8") + "&ipv4=" + URLEncoder.encode(ipv4, "UTF-8") + "&ipv6=" + URLEncoder.encode(ipv6, "UTF-8") + "&info=" + URLEncoder.encode(info, "UTF-8"));
+				if(response.equals("update required"))
+				{
+					System.out.println("Sorry, your dstatnode version is too old. Please download the newest version from https://dstat.live");
+					return;
+				}
+				else
+				{
+					System.out.println("Thank you. Your node is live at https://dstat.live/" + response);
+				}
 			}
 			new Reporter();
 			ch.closeFuture().sync();
