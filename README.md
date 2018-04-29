@@ -1,6 +1,8 @@
 # dstatnode
 
-- [Download the Latest Version](http://dstat.live/dstatnode.zip)
+The software for adding your server to dstat.live.
+
+[[ Download the Latest Version ]](http://dstat.live/dstatnode.zip)
 
 ## Dependencies
 
