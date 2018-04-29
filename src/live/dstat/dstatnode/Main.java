@@ -17,7 +17,7 @@ public class Main
 {
 	public static final Sigar sigar = new Sigar();
 	public static final String endpoint = "http://dstat.live/node/";
-	public static String version = "1.0.1";
+	public static String version = "1.1";
 	public static String ipv4 = "";
 	public static String ipv6 = "";
 	public static long down = 0;
@@ -34,6 +34,36 @@ public class Main
 				"  __| |  ___ | |_   __ _  | |_      | | (_) __ __  ___ \n" +
 				" / _` | (_-< |  _| / _` | |  _|  _  | | | | \\ V / / -_)\n" +
 				" \\__,_| /__/  \\__| \\__,_|  \\__| (_) |_| |_|  \\_/  \\___|\n");
+		int port = 80;
+		String argKey = "";
+		for(String arg : args)
+		{
+			if(!argKey.equals(""))
+			{
+				switch(argKey)
+				{
+					case "--port":
+						port = Integer.parseInt(arg);
+				}
+				argKey = "";
+			}
+			else if(arg.startsWith("--"))
+			{
+				switch(arg)
+				{
+					case "--port":
+						argKey = arg;
+						break;
+					case "--help":
+						System.out.println("--help           Shows this help.");
+						System.out.println("--port <port>    Binds this dstat node to the given port. (Default: 80)");
+						return;
+					default:
+						System.out.println("Unknown argument: " + arg + "\nTry --help for a list of arguments.");
+						return;
+				}
+			}
+		}
 		String info;
 		final File providerFile = new File("info.txt");
 		if(providerFile.exists())
@@ -75,7 +105,6 @@ public class Main
 		}
 		catch(Exception ignored)
 		{
-			ignored.printStackTrace();
 		}
 		if(ipv4.equals(""))
 		{
@@ -92,7 +121,6 @@ public class Main
 		}
 		catch(Exception ignored)
 		{
-			ignored.printStackTrace();
 		}
 		if(ipv6.equals(""))
 		{
@@ -107,6 +135,7 @@ public class Main
 		{
 			System.out.println(ipv6);
 		}
+		System.out.println("Binding to port " + port + "...");
 		EventLoopGroup bossGroup = new NioEventLoopGroup(1);
 		EventLoopGroup workerGroup = new NioEventLoopGroup();
 		try
@@ -115,20 +144,22 @@ public class Main
 			b.group(bossGroup, workerGroup)
 					.channel(NioServerSocketChannel.class)
 					.childHandler(new WebSocketServerInitializer());
-			Channel ch = b.bind(80).sync().channel();
+			Channel ch = b.bind(port).sync().channel();
 			new NetworkMonitor();
 			synchronized(sigar)
 			{
-				String response = request(Main.endpoint + "init", "version=" + URLEncoder.encode(version, "UTF-8") + "&ipv4=" + URLEncoder.encode(ipv4, "UTF-8") + "&ipv6=" + URLEncoder.encode(ipv6, "UTF-8") + "&info=" + URLEncoder.encode(info, "UTF-8"));
+				String response = request(Main.endpoint + "init", "version=" + URLEncoder.encode(version, "UTF-8") + "&ipv4=" + URLEncoder.encode(ipv4, "UTF-8") + "&ipv6=" + URLEncoder.encode(ipv6, "UTF-8") + "&port=" + URLEncoder.encode(String.valueOf(port), "UTF-8") + "&info=" + URLEncoder.encode(info, "UTF-8"));
 				if(response.equals("update required"))
 				{
 					System.out.println("Sorry, your dstatnode version is too old. Please download the newest version from https://dstat.live");
 					return;
 				}
-				else
+				else if(response.equals(""))
 				{
-					System.out.println("Thank you. Your node is live at https://dstat.live/" + response);
+					System.out.println("Sorry, there was an error setting up your node.\nPlease create an issue at: https://github.com/hellshltd/dstatnode/issues/new");
+					return;
 				}
+				System.out.println("Thank you. Your node is live at https://dstat.live/" + response);
 			}
 			new Reporter();
 			ch.closeFuture().sync();
@@ -138,7 +169,7 @@ public class Main
 			//noinspection ConstantConditions
 			if(e instanceof BindException)
 			{
-				System.out.println("Please make sure that port 80 is unused.");
+				System.out.println("Unable to bind to port " + port + ". Make sure it's unused or change it using --port");
 			}
 			else
 			{
