@@ -16,7 +16,7 @@ public class Reporter extends Thread
 		{
 			try
 			{
-				Thread.sleep(30000L);
+				Thread.sleep(30000);
 			}
 			catch(InterruptedException e)
 			{

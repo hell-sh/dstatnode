@@ -67,32 +67,44 @@ public class Main
 			writer.print(info);
 			writer.close();
 		}
-		System.out.print("IPv6: ");
-		ipv6 = request("https://ip.nex.li/ip.txt");
-		if(ipv6.contains("."))
+		System.out.print("IPv4: ");
+		try
 		{
-			ipv4 = ipv6;
-			ipv6 = "";
-			System.out.println("Unable to determine\nIPv4: " + ipv4);
+			ipv4 = request("http://ip.nex.li/ipv4-director");
+		}
+		catch(Exception ignored)
+		{
+			ignored.printStackTrace();
+		}
+		if(ipv4.equals(""))
+		{
+			System.out.println("Unable to determine");
 		}
 		else
 		{
-			System.out.print(ipv6 + "\nIPv4: ");
-			try
-			{
-				ipv4 = request("https://ip.nex.li/ipv4-director");
-			}
-			catch(IOException ignored)
-			{
-			}
+			System.out.println(ipv4);
+		}
+		System.out.print("IPv6: ");
+		try
+		{
+			ipv6 = request("http://ip.nex.li/ipv6-director");
+		}
+		catch(Exception ignored)
+		{
+			ignored.printStackTrace();
+		}
+		if(ipv6.equals(""))
+		{
+			System.out.println("Unable to determine");
 			if(ipv4.equals(""))
 			{
-				System.out.println("Unable to determine");
+				System.out.println("Apparently you're not connected via IPv4 nor via IPv6?!");
+				return;
 			}
-			else
-			{
-				System.out.println(ipv4);
-			}
+		}
+		else
+		{
+			System.out.println(ipv6);
 		}
 		EventLoopGroup bossGroup = new NioEventLoopGroup(1);
 		EventLoopGroup workerGroup = new NioEventLoopGroup();
