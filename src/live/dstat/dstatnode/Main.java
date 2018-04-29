@@ -33,7 +33,7 @@ public class Main
 		System.out.println("     _        _            _         _   _             \n" +
 				"  __| |  ___ | |_   __ _  | |_      | | (_) __ __  ___ \n" +
 				" / _` | (_-< |  _| / _` | |  _|  _  | | | | \\ V / / -_)\n" +
-				" \\__,_| /__/  \\__| \\__,_|  \\__| (_) |_| |_|  \\_/  \\___|\n");
+				" \\__,_| /__/  \\__| \\__,_|  \\__| (_) |_| |_|  \\_/  \\___|\n\ndstatnode v" + version + "\n");
 		int port = 80;
 		String argKey = "";
 		for(String arg : args)
@@ -93,7 +93,7 @@ public class Main
 				}
 			}
 			while(true);
-			System.out.println("Thank you. Feel free to edit the info.txt if anything changes.");
+			System.out.println("Thank you. Feel free to edit the info.txt if anything changes.\n");
 			PrintWriter writer = new PrintWriter("info.txt", "UTF-8");
 			writer.print(info);
 			writer.close();
@@ -135,7 +135,7 @@ public class Main
 		{
 			System.out.println(ipv6);
 		}
-		System.out.println("Binding to port " + port + "...");
+		System.out.println("\nBinding to port " + port + "...");
 		EventLoopGroup bossGroup = new NioEventLoopGroup(1);
 		EventLoopGroup workerGroup = new NioEventLoopGroup();
 		try
