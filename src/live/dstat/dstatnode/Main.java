@@ -17,7 +17,7 @@ public class Main
 {
 	public static final Sigar sigar = new Sigar();
 	public static final String endpoint = "http://dstat.live/node/";
-	public static String version = "1.1";
+	public static String version = "1.1.1";
 	public static String ipv4 = "";
 	public static String ipv6 = "";
 	public static long down = 0;
@@ -101,7 +101,7 @@ public class Main
 		System.out.print("IPv4: ");
 		try
 		{
-			ipv4 = request("http://ip.nex.li/ipv4-director");
+			ipv4 = request("http://ip.nex.li/insecure-ipv4-director");
 		}
 		catch(Exception ignored)
 		{
@@ -117,7 +117,7 @@ public class Main
 		System.out.print("IPv6: ");
 		try
 		{
-			ipv6 = request("http://ip.nex.li/ipv6-director");
+			ipv6 = request("http://ip.nex.li/insecure-ipv6-director");
 		}
 		catch(Exception ignored)
 		{
