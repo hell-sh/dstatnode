@@ -17,7 +17,7 @@ public class Main
 {
 	public static final Sigar sigar = new Sigar();
 	public static final String endpoint = "http://dstat.live/node/";
-	public static String version = "1.1.1";
+	public static String version = "1.1.2";
 	public static String ipv4 = "";
 	public static String ipv6 = "";
 	public static long down = 0;
@@ -125,11 +125,6 @@ public class Main
 		if(ipv6.equals(""))
 		{
 			System.out.println("Unable to determine");
-			if(ipv4.equals(""))
-			{
-				System.out.println("Apparently you're not connected via IPv4 nor via IPv6?!");
-				return;
-			}
 		}
 		else
 		{
