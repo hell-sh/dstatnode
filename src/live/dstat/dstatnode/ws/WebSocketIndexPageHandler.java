@@ -18,7 +18,7 @@ public class WebSocketIndexPageHandler extends SimpleChannelInboundHandler<FullH
 {
 
 	@Override
-	protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception
+	protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req)
 	{
 		ByteBuf buf = Unpooled.copiedBuffer("200", CharsetUtil.UTF_8);
 		DefaultFullHttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, OK);

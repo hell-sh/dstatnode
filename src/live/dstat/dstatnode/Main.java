@@ -8,32 +8,44 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import live.dstat.dstatnode.ws.WebSocketServerInitializer;
 import org.hyperic.sigar.Sigar;
 
-import java.io.*;
-import java.net.*;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.X509TrustManager;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.net.BindException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 import java.util.Scanner;
 
 public class Main
 {
 	public static final Sigar sigar = new Sigar();
-	public static final String endpoint = "http://dstat.live/node/";
-	public static String version = "1.1.2";
-	public static String ipv4 = "";
-	public static String ipv6 = "";
+	static final String endpoint = "http://dstat.live/node/";
+	static long _down = 0;
+	static long _up = 0;
 	public static long down = 0;
-	public static long _down = 0;
+	static long _requests = 0;
 	public static long up = 0;
-	public static long _up = 0;
+	private static String ipv4 = "";
 	public static long requests = 0;
 	public static long requests_ = 0;
-	public static long _requests = 0;
+	private static String ipv6 = "";
 
 	public static void main(String[] args) throws Exception
 	{
-		System.out.println("     _        _            _         _   _             \n" +
-				"  __| |  ___ | |_   __ _  | |_      | | (_) __ __  ___ \n" +
-				" / _` | (_-< |  _| / _` | |  _|  _  | | | | \\ V / / -_)\n" +
-				" \\__,_| /__/  \\__| \\__,_|  \\__| (_) |_| |_|  \\_/  \\___|\n\ndstatnode v" + version + "\n");
+		final String version = "1.1.3";
+		System.out.println("     _        _            _         _   _             \n" + "  __| |  ___ | |_   __ _  | |_      | | (_) __ __  ___ \n" + " / _` | (_-< |  _| / _` | |  _|  _  | | | | \\ V / / -_)\n" + " \\__,_| /__/  \\__| \\__,_|  \\__| (_) |_| |_|  \\_/  \\___|\n\ndstatnode v" + version + "\n");
 		int port = 80;
 		String argKey = "";
 		for(String arg : args)
@@ -101,7 +113,7 @@ public class Main
 		System.out.print("IPv4: ");
 		try
 		{
-			ipv4 = request("http://ip.nex.li/insecure-ipv4-director");
+			ipv4 = request("https://ip.nex.li/ipv4-director");
 		}
 		catch(Exception ignored)
 		{
@@ -117,7 +129,7 @@ public class Main
 		System.out.print("IPv6: ");
 		try
 		{
-			ipv6 = request("http://ip.nex.li/insecure-ipv6-director");
+			ipv6 = request("https://ip.nex.li/ipv6-director");
 		}
 		catch(Exception ignored)
 		{
@@ -136,9 +148,7 @@ public class Main
 		try
 		{
 			ServerBootstrap b = new ServerBootstrap();
-			b.group(bossGroup, workerGroup)
-					.channel(NioServerSocketChannel.class)
-					.childHandler(new WebSocketServerInitializer());
+			b.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class).childHandler(new WebSocketServerInitializer());
 			Channel ch = b.bind(port).sync().channel();
 			new NetworkMonitor();
 			synchronized(sigar)
@@ -147,11 +157,13 @@ public class Main
 				if(response.equals("update required"))
 				{
 					System.out.println("Sorry, your dstatnode version is too old. Please download the newest version from https://dstat.live");
+					System.exit(0);
 					return;
 				}
 				else if(response.equals(""))
 				{
-					System.out.println("Sorry, there was an error setting up your node.\nPlease create an issue at: https://github.com/hellshltd/dstatnode/issues/new");
+					System.out.println("Sorry, there was an error setting up your node.\nPlease create an issue at: https://github.com/hell-sh/dstatnode/issues/new");
+					System.exit(0);
 					return;
 				}
 				System.out.println("Thank you. Your node is live at https://dstat.live/" + response);
@@ -161,7 +173,6 @@ public class Main
 		}
 		catch(Exception e)
 		{
-			//noinspection ConstantConditions
 			if(e instanceof BindException)
 			{
 				System.out.println("Unable to bind to port " + port + ". Make sure it's unused or change it using --port");
@@ -178,19 +189,42 @@ public class Main
 		}
 	}
 
-	public static String request(String rawurl) throws Exception
+	private static String request(String rawurl) throws Exception
 	{
-		URL url = new URL(rawurl);
-		URLConnection con = url.openConnection();
-		HttpURLConnection http = (HttpURLConnection) con;
-		http.setRequestMethod("GET");
-		http.setDoOutput(true);
-		http.setRequestProperty("User-Agent", "DstatNode");
-		http.connect();
-		return new Scanner(http.getInputStream()).useDelimiter("\\A").next();
+		final URL url = new URL(rawurl);
+		SSLContext context = SSLContext.getInstance("TLS");
+		context.init(null, new X509TrustManager[]{new X509TrustManager()
+		{
+			public void checkClientTrusted(X509Certificate[] chain, String authType)
+			{
+			}
+
+			public void checkServerTrusted(X509Certificate[] chain, String authType)
+			{
+			}
+
+			public X509Certificate[] getAcceptedIssuers()
+			{
+				return new X509Certificate[0];
+			}
+		}}, new SecureRandom());
+		HttpsURLConnection.setDefaultSSLSocketFactory(context.getSocketFactory());
+		final HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
+		con.setHostnameVerifier(new HostnameVerifier()
+		{
+			public boolean verify(String hostname, SSLSession session)
+			{
+				return true;
+			}
+		});
+		con.setRequestMethod("GET");
+		con.setDoOutput(true);
+		con.setRequestProperty("User-Agent", "DstatNode");
+		con.connect();
+		return new Scanner(con.getInputStream()).useDelimiter("\\A").next();
 	}
 
-	public static String request(String rawurl, String data) throws Exception
+	static String request(String rawurl, String data) throws Exception
 	{
 		URL url = new URL(rawurl);
 		URLConnection con = url.openConnection();

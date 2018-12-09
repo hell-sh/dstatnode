@@ -6,7 +6,7 @@ public class Reporter extends Thread
 {
 	Reporter()
 	{
-		new Thread(this).start();
+		this.start();
 	}
 
 	@Override
@@ -34,6 +34,6 @@ public class Reporter extends Thread
 				e.printStackTrace();
 			}
 		}
-		while(true);
+		while(!this.isInterrupted());
 	}
 }

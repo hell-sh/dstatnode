@@ -9,7 +9,7 @@ public class NetworkMonitor extends Thread
 {
 	NetworkMonitor()
 	{
-		new Thread(this).start();
+		this.start();
 	}
 
 	@Override
@@ -59,7 +59,7 @@ public class NetworkMonitor extends Thread
 				}
 				Thread.sleep(1000);
 			}
-			while(true);
+			while(!this.isInterrupted());
 		}
 		catch(Exception e)
 		{
